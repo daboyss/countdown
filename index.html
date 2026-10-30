@@ -397,13 +397,15 @@
     try {
       const res = await fetch(`https://ntfy.sh/${HW_TOPIC}/json?poll=1&since=all`, { cache: "no-store" });
       const lines = (await res.text()).trim().split("\n").filter(Boolean);
-      let data = null;
-      for (let i = lines.length - 1; i >= 0 && !data; i--) {
-        try { const ev = JSON.parse(lines[i]); if (ev.event === "message" && ev.message) data = JSON.parse(ev.message); } catch (e) {}
-      }
-      if (!data) { showTodoFallback(); return; }
+      // Collect every page from the newest update
+      const msgs = [];
+      lines.forEach(line => { try { const ev = JSON.parse(line); if (ev.event === "message" && ev.message) msgs.push(JSON.parse(ev.message)); } catch (e) {} });
+      if (!msgs.length) { showTodoFallback(); return; }
+      const newest = Math.max(...msgs.map(m => m.u || 0));
+      const pages = msgs.filter(m => m.u === newest).sort((a, b) => (a.p || 0) - (b.p || 0));
+      const data = { u: newest, h: [].concat(...pages.map(m => m.h || [])) };
       const now = Date.now();
-      const items = (data.h || []).map(i => ({ title: i.t, course: i.c, due: new Date(i.d), diff: i.d - now, link: "https://classroom.google.com" + (i.l || "") }));
+      const items = data.h.map(i => ({ title: i.t, course: i.c, due: i.d ? new Date(i.d) : null, diff: i.d ? i.d - now : Infinity, link: "https://classroom.google.com" + (i.l || "") }));
       const mins = Math.max(0, Math.round((now - data.u) / 60000));
       $("hwSub").textContent = `From Google Classroom · updated ${mins < 1 ? "just now" : mins + " min ago"}`;
       $("hwRefresh").hidden = false;
@@ -411,13 +413,13 @@
       $("hwBox").innerHTML = `<div class="hw-list">${items.map(i => {
         const cls = i.diff < 0 ? "missing" : i.diff < 86400000 ? "soon" : "";
         const chip = cls === "missing" ? '<span class="chip missing">Missing</span>' : cls === "soon" ? '<span class="chip soon">Due soon</span>' : "";
-        return `<a class="hw-card ${cls}" href="${esc(i.link)}" target="_blank" rel="noopener"><span class="hw-stripe"></span><span class="hw-body"><p class="hw-title">${esc(i.title)}</p><p class="hw-course">${esc(i.course)}</p><p class="hw-due">${chip}<span>${esc(dueFmt.format(i.due))} · ${relTime(i.diff)}</span></p></span></a>`;
+        return `<a class="hw-card ${cls}" href="${esc(i.link)}" target="_blank" rel="noopener"><span class="hw-stripe"></span><span class="hw-body"><p class="hw-title">${esc(i.title)}</p><p class="hw-course">${esc(i.course)}</p><p class="hw-due">${chip}<span>${i.due ? esc(dueFmt.format(i.due)) + " · " + relTime(i.diff) : "No due date"}</span></p></span></a>`;
       }).join("")}</div>`;
     } catch (e) {
       showTodoFallback("Couldn't reach your homework robot");
     } finally { hwLoading = false; }
   }
-  setInterval(loadHomework, 120000);
+  setInterval(loadHomework, 30000);
 
 
   function render() {
@@ -470,7 +472,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "13";
+  const APP_VERSION = "14";
   async function checkForUpdate() {
     if (!location.hostname.endsWith("github.io")) return;
     try {
