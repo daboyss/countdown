@@ -317,18 +317,21 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "6";
+  const APP_VERSION = "7";
   async function checkForUpdate() {
-    if (location.protocol !== "https:" || location.hostname.endsWith("claude.ai")) return;
+    if (!location.hostname.endsWith("github.io")) return;
     try {
-      const res = await fetch(location.pathname + "?v=" + Date.now(), { cache: "no-store" });
+      const res = await fetch(location.pathname + "?check=" + Date.now(), { cache: "no-store" });
       const text = await res.text();
       const m = text.match(/const APP_VERSION = "([^"]+)"/);
-      if (m && m[1] !== APP_VERSION) location.reload();
+      // Open the new version by its own address so the phone can't show an old saved copy
+      const alreadyTried = new URLSearchParams(location.search).get("v") === (m && m[1]);
+      if (m && m[1] !== APP_VERSION && !alreadyTried) location.replace(location.pathname + "?v=" + encodeURIComponent(m[1]));
     } catch (e) {}
   }
   $("ver").textContent = APP_VERSION;
-  setInterval(checkForUpdate, 60000);
+  checkForUpdate();
+  setInterval(checkForUpdate, 15000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) checkForUpdate(); });
 
   // Refresh instantly when the app comes back from the background
