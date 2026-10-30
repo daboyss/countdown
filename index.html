@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Countdown">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;700;800&display=swap">
 <style>
+  [hidden] { display: none !important; }
   /* Fill the whole iPhone screen, including under the notch and home bar */
   html { height: 100%; min-height: 100vh; min-height: 100lvh; background: #0b0a1f; }
   html:has(body[data-app="glass"]) { background: linear-gradient(180deg, #2a1667 0%, #1a1450 55%, #1e2a7a 100%); }
@@ -485,7 +486,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "9";
+  const APP_VERSION = "10";
   async function checkForUpdate() {
     if (!location.hostname.endsWith("github.io")) return;
     try {
