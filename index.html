@@ -323,7 +323,7 @@
 
   /* ---------- Google Classroom homework ---------- */
   // Paste the Google OAuth Client ID here
-  const GOOGLE_CLIENT_ID = "";
+  const GOOGLE_CLIENT_ID = "637315560252-tsdk6avnun1rso0cn93025n6dk19hrid.apps.googleusercontent.com";
   const SCOPES = "https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly";
   const REDIRECT_URI = location.origin + location.pathname.replace(/index\.html$/, "");
   const TOKEN_KEY = "carlsbad-classroom-token";
@@ -486,7 +486,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "10";
+  const APP_VERSION = "11";
   async function checkForUpdate() {
     if (!location.hostname.endsWith("github.io")) return;
     try {
