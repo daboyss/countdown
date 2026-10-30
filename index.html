@@ -112,6 +112,7 @@
   .hw-sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
   .pill-btn { flex: none; border: 1px solid var(--border); background: var(--panel); color: var(--fg); font: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; min-height: 44px; border-radius: 99px; cursor: pointer; transition: transform .15s ease; display: inline-flex; align-items: center; gap: 8px; }
   .pill-btn svg { width: 16px; height: 16px; }
+  a.pill-btn { text-decoration: none; margin-top: 14px; }
   .pill-btn.primary { background: var(--on); border-color: transparent; color: #fff; }
   body[data-app="dark"] .pill-btn.primary { color: #000; }
   .hw-list { display: flex; flex-direction: column; gap: 10px; }
@@ -383,7 +384,11 @@
 
   let hwLoading = false;
   async function loadHomework() {
-    if (!GOOGLE_CLIENT_ID) { hwMessage("<strong>Google Classroom isn't set up yet.</strong><br>Once the setup is finished, your homework will show up here."); return; }
+    if (!GOOGLE_CLIENT_ID) {
+      $("hwSub").textContent = "Your To-do list in Google Classroom";
+      $("hwBox").innerHTML = '<div class="hw-empty"><strong>Check what\'s due</strong><br>Opens your Google Classroom To-do list with everything you haven\'t turned in yet.<br><a class="pill-btn primary" href="https://classroom.google.com/u/0/a/not-turned-in/all" target="_blank" rel="noopener">Open Classroom To-do</a></div>';
+      return;
+    }
     if (classroomError) { hwMessage(`<strong>Google didn't let the app connect.</strong><br>Google said: ${esc(classroomError)}`, "Try again"); return; }
     const token = getToken();
     if (!token) {
@@ -480,7 +485,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "8";
+  const APP_VERSION = "9";
   async function checkForUpdate() {
     if (!location.hostname.endsWith("github.io")) return;
     try {
