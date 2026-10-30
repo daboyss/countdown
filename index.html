@@ -71,9 +71,9 @@
     color-scheme: light;
   }
   body {
-    min-height: 100vh; min-height: 100lvh; height: 100%;
+    min-height: 100vh; min-height: 100lvh;
     background: var(--bg); color: var(--fg); font-family: var(--font);
-    margin: 0; overflow: hidden; position: relative;
+    margin: 0; overflow-x: hidden; position: relative;
     transition: background-color .4s ease, color .4s ease;
     -webkit-tap-highlight-color: transparent;
   }
@@ -87,7 +87,7 @@
   @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(4vmax, 3vmax) scale(1.08); } }
 
   .app {
-    position: fixed; inset: 0; box-sizing: border-box;
+    position: relative; min-height: 100vh; min-height: 100svh; box-sizing: border-box;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
@@ -96,6 +96,44 @@
     text-align: center;
     animation: fadeIn .7s ease both;
   }
+  .scroll-hint { position: absolute; left: 0; right: 0; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .scroll-hint svg { width: 18px; height: 18px; animation: bob 1.8s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(4px); } }
+
+  /* Homework section */
+  .hw {
+    position: relative; box-sizing: border-box; max-width: 560px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-top: 24px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 48px);
+  }
+  .hw-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .hw-head h2 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -.02em; }
+  .hw-sub { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .pill-btn { flex: none; border: 1px solid var(--border); background: var(--panel); color: var(--fg); font: inherit; font-size: 14px; font-weight: 500; padding: 10px 16px; min-height: 44px; border-radius: 99px; cursor: pointer; transition: transform .15s ease; display: inline-flex; align-items: center; gap: 8px; }
+  .pill-btn svg { width: 16px; height: 16px; }
+  .pill-btn.primary { background: var(--on); border-color: transparent; color: #fff; }
+  body[data-app="dark"] .pill-btn.primary { color: #000; }
+  .hw-list { display: flex; flex-direction: column; gap: 10px; }
+  .hw-card { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 16px; background: var(--panel); border: 1px solid var(--border); color: var(--fg); text-decoration: none; transition: transform .15s ease; }
+  .hw-card:active { transform: scale(.98); }
+  body:is([data-app="glass"],[data-app="crimson"],[data-app="cloudy"],[data-app="aura"]) :is(.hw-card, .pill-btn:not(.primary), .hw-empty) { backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  .hw-stripe { flex: none; width: 4px; align-self: stretch; border-radius: 4px; background: var(--track); }
+  .hw-card.soon .hw-stripe { background: #f59e0b; }
+  .hw-card.missing .hw-stripe { background: #ef4444; }
+  .hw-body { flex: 1; min-width: 0; }
+  .hw-title { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
+  .hw-course { margin: 3px 0 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+  .hw-due { margin: 8px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .chip { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 99px; }
+  .chip.soon { background: rgba(245,158,11,.2); color: #fbbf24; }
+  .chip.missing { background: rgba(239,68,68,.2); color: #f87171; }
+  body[data-app="white"] .chip.soon { color: #b45309; }
+  body[data-app="white"] .chip.missing { color: #b91c1c; }
+  .hw-empty { padding: 22px 18px; border-radius: 16px; background: var(--panel); border: 1px dashed var(--border); font-size: 14px; line-height: 1.55; color: var(--muted); }
+  .hw-empty strong { color: var(--fg); font-weight: 500; }
+  .hw-empty .pill-btn { margin-top: 14px; }
+
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
   .school { font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: 0 0 18px; }
@@ -204,7 +242,21 @@
   <div class="clock" id="clock"></div>
   <p class="lastday">Last day: Thursday, June 10, 2027</p>
   <div class="progress"><div class="bar"><div class="fill" id="fill"></div></div><span class="pct" id="pct">0% done</span></div>
+  <div class="scroll-hint" aria-hidden="true">Homework<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
 </main>
+
+<section class="hw" id="homework" aria-label="Homework">
+  <div class="hw-head">
+    <div>
+      <h2>Homework</h2>
+      <p class="hw-sub" id="hwSub">From Google Classroom</p>
+    </div>
+    <button class="pill-btn" id="hwRefresh" hidden aria-label="Refresh homework">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Refresh
+    </button>
+  </div>
+  <div id="hwBox"></div>
+</section>
 
 <div class="scrim" id="scrim"></div>
 <section class="sheet" id="sheet" aria-label="Settings" aria-hidden="true">
@@ -267,6 +319,117 @@
   const $ = id => document.getElementById(id);
   const pad = n => String(n).padStart(2, "0");
 
+  /* ---------- Google Classroom homework ---------- */
+  // Paste the Google OAuth Client ID here
+  const GOOGLE_CLIENT_ID = "";
+  const SCOPES = "https://www.googleapis.com/auth/classroom.courses.readonly https://www.googleapis.com/auth/classroom.coursework.me.readonly";
+  const REDIRECT_URI = location.origin + location.pathname.replace(/index\.html$/, "");
+  const TOKEN_KEY = "carlsbad-classroom-token";
+
+  // Pick up the sign-in result when Google sends you back
+  (function readTokenFromUrl() {
+    if (!location.hash.includes("access_token=")) return;
+    const p = new URLSearchParams(location.hash.slice(1));
+    const token = p.get("access_token"), exp = Number(p.get("expires_in") || 3600);
+    if (token) { try { localStorage.setItem(TOKEN_KEY, JSON.stringify({ token, until: Date.now() + (exp - 60) * 1000 })); } catch (e) {} }
+    history.replaceState(null, "", location.pathname);
+  })();
+  const classroomError = (() => {
+    const q = new URLSearchParams(location.hash.slice(1) || location.search.slice(1));
+    const err = q.get("error");
+    if (err) history.replaceState(null, "", location.pathname);
+    return err;
+  })();
+
+  function getToken() {
+    try { const t = JSON.parse(localStorage.getItem(TOKEN_KEY) || "null"); if (t && t.until > Date.now()) return t.token; } catch (e) {}
+    return null;
+  }
+  function wasConnected() { try { return !!localStorage.getItem(TOKEN_KEY); } catch (e) { return false; } }
+  function connectClassroom() {
+    const url = "https://accounts.google.com/o/oauth2/v2/auth?" + new URLSearchParams({
+      client_id: GOOGLE_CLIENT_ID, redirect_uri: REDIRECT_URI, response_type: "token",
+      scope: SCOPES, include_granted_scopes: "true", ...(wasConnected() ? {} : { prompt: "consent" })
+    });
+    location.assign(url);
+  }
+  const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  function hwMessage(html, buttonLabel) {
+    $("hwBox").innerHTML = `<div class="hw-empty">${html}${buttonLabel ? `<br><button class="pill-btn primary" id="hwConnect">${buttonLabel}</button>` : ""}</div>`;
+    const b = document.getElementById("hwConnect");
+    if (b) b.addEventListener("click", connectClassroom);
+  }
+
+  async function api(path, token) {
+    const res = await fetch("https://classroom.googleapis.com/v1/" + path, { headers: { Authorization: "Bearer " + token } });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) { const e = new Error((body.error && body.error.message) || ("Error " + res.status)); e.status = res.status; throw e; }
+    return body;
+  }
+
+  function dueDateOf(w) {
+    if (!w.dueDate) return null;
+    const d = w.dueDate, t = w.dueTime || {};
+    const hasTime = t.hours !== undefined || t.minutes !== undefined;
+    return new Date(Date.UTC(d.year, d.month - 1, d.day, hasTime ? (t.hours || 0) : 23, hasTime ? (t.minutes || 0) : 59));
+  }
+  function relTime(ms) {
+    const abs = Math.abs(ms), h = Math.round(abs / 3600000), d = Math.round(abs / 86400000);
+    const txt = abs < 3600000 ? Math.max(1, Math.round(abs / 60000)) + " min" : abs < 86400000 * 2 ? h + " h" : d + " days";
+    return ms >= 0 ? "in " + txt : txt + " ago";
+  }
+  const dueFmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+  let hwLoading = false;
+  async function loadHomework() {
+    if (!GOOGLE_CLIENT_ID) { hwMessage("<strong>Google Classroom isn't set up yet.</strong><br>Once the setup is finished, your homework will show up here."); return; }
+    if (classroomError) { hwMessage(`<strong>Google didn't let the app connect.</strong><br>Google said: ${esc(classroomError)}`, "Try again"); return; }
+    const token = getToken();
+    if (!token) {
+      hwMessage(wasConnected() ? "<strong>Sign-in expired.</strong><br>Google sign-ins last an hour. Tap to reconnect." : "<strong>Connect your Google Classroom</strong><br>Sign in with your school Google account to see your homework here.", wasConnected() ? "Reconnect" : "Connect Google Classroom");
+      $("hwRefresh").hidden = true;
+      return;
+    }
+    if (hwLoading) return;
+    hwLoading = true;
+    $("hwSub").textContent = "Loading…";
+    try {
+      const courses = (await api("courses?studentId=me&courseStates=ACTIVE&pageSize=50", token)).courses || [];
+      const now = Date.now(), items = [];
+      await Promise.all(courses.map(async c => {
+        const [work, subs] = await Promise.all([
+          api(`courses/${c.id}/courseWork?pageSize=60&orderBy=updateTime%20desc`, token).catch(() => ({})),
+          api(`courses/${c.id}/courseWork/-/studentSubmissions?userId=me&pageSize=100`, token).catch(() => ({}))
+        ]);
+        const done = new Set((subs.studentSubmissions || []).filter(s => s.state === "TURNED_IN" || s.state === "RETURNED").map(s => s.courseWorkId));
+        (work.courseWork || []).forEach(w => {
+          const due = dueDateOf(w);
+          if (!due || done.has(w.id)) return;
+          const diff = due.getTime() - now;
+          if (diff < -14 * 86400000) return; // skip things over 2 weeks overdue
+          items.push({ title: w.title, course: c.name, due, diff, link: w.alternateLink });
+        });
+      }));
+      items.sort((a, b) => a.due - b.due);
+      $("hwSub").textContent = `From Google Classroom · updated ${new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" }).format(new Date())}`;
+      $("hwRefresh").hidden = false;
+      if (!courses.length) { hwMessage("<strong>No classes found.</strong><br>Google didn't return any active classes for this account."); return; }
+      if (!items.length) { hwMessage("<strong>No homework due.</strong><br>Everything with a due date is turned in."); return; }
+      $("hwBox").innerHTML = `<div class="hw-list">${items.map(i => {
+        const cls = i.diff < 0 ? "missing" : i.diff < 86400000 ? "soon" : "";
+        const chip = cls === "missing" ? '<span class="chip missing">Missing</span>' : cls === "soon" ? '<span class="chip soon">Due soon</span>' : "";
+        return `<a class="hw-card ${cls}" href="${esc(i.link)}" target="_blank" rel="noopener"><span class="hw-stripe"></span><span class="hw-body"><p class="hw-title">${esc(i.title)}</p><p class="hw-course">${esc(i.course)}</p><p class="hw-due">${chip}<span>${esc(dueFmt.format(i.due))} · ${relTime(i.diff)}</span></p></span></a>`;
+      }).join("")}</div>`;
+    } catch (e) {
+      $("hwSub").textContent = "From Google Classroom";
+      if (e.status === 401) { try { localStorage.removeItem(TOKEN_KEY); localStorage.setItem(TOKEN_KEY, "{}"); } catch (x) {} hwMessage("<strong>Sign-in expired.</strong><br>Tap to reconnect.", "Reconnect"); }
+      else if (e.status === 403) hwMessage(`<strong>Your school blocked this.</strong><br>Google said: ${esc(e.message)}`, "Try again");
+      else hwMessage(`<strong>Couldn't load homework.</strong><br>${esc(e.message)}`, "Try again");
+    } finally { hwLoading = false; }
+  }
+
+
   function render() {
     const now = Date.now();
     let left = Math.max(0, LAST_DAY_END - now);
@@ -317,7 +480,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "7";
+  const APP_VERSION = "8";
   async function checkForUpdate() {
     if (!location.hostname.endsWith("github.io")) return;
     try {
@@ -335,7 +498,7 @@
   document.addEventListener("visibilitychange", () => { if (!document.hidden) checkForUpdate(); });
 
   // Refresh instantly when the app comes back from the background
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) render(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { render(); loadHomework(); } });
   window.addEventListener("pageshow", render);
   window.addEventListener("focus", render);
 
@@ -348,6 +511,8 @@
     }
     applyTheme();
     render();
+    loadHomework();
+    $("hwRefresh").addEventListener("click", loadHomework);
     if (data && data.open) openSheet(true);
     setInterval(render, 1000);
   }
