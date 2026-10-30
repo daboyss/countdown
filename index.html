@@ -15,6 +15,9 @@
   html:has(body[data-app="glass"]) { background: linear-gradient(180deg, #2a1667 0%, #1a1450 55%, #1e2a7a 100%); }
   html:has(body[data-app="dark"]) { background: #000000; }
   html:has(body[data-app="white"]) { background: #f4f5f8; }
+  html:has(body[data-app="crimson"]) { background: linear-gradient(180deg, #4a0717 0%, #22030b 55%, #3a0612 100%); }
+  html:has(body[data-app="cloudy"]) { background: linear-gradient(180deg, #5b626c 0%, #40464f 55%, #30353c 100%); }
+  html:has(body[data-app="aura"]) { background: linear-gradient(180deg, #06204f 0%, #030f2b 55%, #053656 100%); }
   /* Layout: one full screen, giant day count centered, gear top-right, settings sheet slides up */
   :root {
     --font: "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -24,6 +27,33 @@
     --panel: rgba(255,255,255,.10); --border: rgba(255,255,255,.22);
     --track: rgba(255,255,255,.16); --accent: #a78bfa; --accent2: #60a5fa;
     --sheet: rgba(30,24,64,.72); --scrim: rgba(5,4,18,.45); --on: #8b5cf6;
+    color-scheme: dark;
+  }
+  body[data-app="crimson"] {
+    --bg: #1a030a; --fg: #ffffff; --muted: rgba(255,228,232,.66);
+    --panel: rgba(255,255,255,.09); --border: rgba(255,190,200,.24);
+    --track: rgba(255,255,255,.15); --accent: #fb7185; --accent2: #e11d48;
+    --sheet: rgba(58,8,22,.74); --scrim: rgba(20,2,8,.5); --on: #dc143c;
+    --b1: #be123c; --b2: #7f1d1d; --b3: #f43f5e; --o1: .6; --o2: .6; --o3: .3;
+    --digits: #fecdd3;
+    color-scheme: dark;
+  }
+  body[data-app="cloudy"] {
+    --bg: #3a3f47; --fg: #ffffff; --muted: rgba(255,255,255,.72);
+    --panel: rgba(255,255,255,.13); --border: rgba(255,255,255,.28);
+    --track: rgba(255,255,255,.2); --accent: #e5e7eb; --accent2: #9ca3af;
+    --sheet: rgba(64,70,79,.78); --scrim: rgba(20,22,26,.45); --on: #64748b;
+    --b1: #c3c9d1; --b2: #8a929c; --b3: #e5e8ec; --o1: .45; --o2: .5; --o3: .3;
+    --blur: 90px; --digits: #e2e8f0;
+    color-scheme: dark;
+  }
+  body[data-app="aura"] {
+    --bg: #020b22; --fg: #ffffff; --muted: rgba(224,242,254,.68);
+    --panel: rgba(255,255,255,.09); --border: rgba(186,230,253,.26);
+    --track: rgba(255,255,255,.15); --accent: #38bdf8; --accent2: #22d3ee;
+    --sheet: rgba(8,24,56,.74); --scrim: rgba(2,8,24,.5); --on: #0ea5e9;
+    --b1: #2563eb; --b2: #0ea5e9; --b3: #22d3ee; --o1: .6; --o2: .55; --o3: .35;
+    --digits: #bae6fd;
     color-scheme: dark;
   }
   body[data-app="dark"] {
@@ -47,13 +77,14 @@
     transition: background-color .4s ease, color .4s ease;
     -webkit-tap-highlight-color: transparent;
   }
-  /* nebula glow (glass only) */
+  /* glow blobs (Glass, Crimson, Grey Cloudy, Blue Aura) */
   .nebula { position: fixed; top: -30vh; bottom: -30vh; left: 0; right: 0; pointer-events: none; opacity: 0; transition: opacity .5s ease; overflow: hidden; }
-  body[data-app="glass"] .nebula { opacity: 1; }
-  .nebula span { position: absolute; border-radius: 50%; filter: blur(70px); }
-  .nebula .b1 { width: 70vmax; height: 70vmax; left: -25vmax; top: -20vmax; background: #6d28d9; opacity: .55; }
-  .nebula .b2 { width: 60vmax; height: 60vmax; right: -25vmax; bottom: -15vmax; background: #1d4ed8; opacity: .5; }
-  .nebula .b3 { width: 35vmax; height: 35vmax; left: 40%; top: 45%; background: #db2777; opacity: .28; }
+  body:is([data-app="glass"],[data-app="crimson"],[data-app="cloudy"],[data-app="aura"]) .nebula { opacity: 1; }
+  .nebula span { position: absolute; border-radius: 50%; filter: blur(var(--blur, 70px)); transition: background-color .6s ease, opacity .6s ease; animation: drift 18s ease-in-out infinite alternate; }
+  .nebula .b1 { width: 70vmax; height: 70vmax; left: -25vmax; top: -20vmax; background: var(--b1, #6d28d9); opacity: var(--o1, .55); }
+  .nebula .b2 { width: 60vmax; height: 60vmax; right: -25vmax; bottom: -15vmax; background: var(--b2, #1d4ed8); opacity: var(--o2, .5); animation-duration: 22s; animation-direction: alternate-reverse; }
+  .nebula .b3 { width: 35vmax; height: 35vmax; left: 40%; top: 45%; background: var(--b3, #db2777); opacity: var(--o3, .28); animation-duration: 26s; }
+  @keyframes drift { from { transform: translate(0, 0) scale(1); } to { transform: translate(4vmax, 3vmax) scale(1.08); } }
 
   .app {
     position: fixed; inset: 0; box-sizing: border-box;
@@ -69,14 +100,14 @@
 
   .school { font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: 0 0 18px; }
   .days { font-size: clamp(96px, 32vw, 160px); font-weight: 800; line-height: .95; letter-spacing: -.04em; font-variant-numeric: tabular-nums; margin: 0; }
-  body[data-app="glass"] .days { background: linear-gradient(180deg, #fff 30%, #c4b5fd); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  body:is([data-app="glass"],[data-app="crimson"],[data-app="cloudy"],[data-app="aura"]) .days { background: linear-gradient(180deg, #fff 30%, var(--digits, #c4b5fd)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .label { font-size: 20px; font-weight: 300; margin: 6px 0 22px; }
   .clock {
     font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums;
     padding: 10px 20px; border-radius: 14px; background: var(--panel); border: 1px solid var(--border);
     margin-bottom: 24px;
   }
-  body[data-app="glass"] .clock { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+  body:is([data-app="glass"],[data-app="crimson"],[data-app="cloudy"],[data-app="aura"]) .clock { backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
   .clock .u { font-size: .65em; color: var(--muted); margin-left: 1px; margin-right: 8px; }
   .clock .u:last-child { margin-right: 0; }
   .lastday { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
@@ -93,7 +124,7 @@
     background: var(--panel); color: var(--fg); display: grid; place-items: center; cursor: pointer;
     transition: transform .15s ease;
   }
-  body[data-app="glass"] .gear { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+  body:is([data-app="glass"],[data-app="crimson"],[data-app="cloudy"],[data-app="aura"]) .gear { backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
   .gear svg { width: 24px; height: 24px; transition: transform .5s ease; }
   .gear.spin svg { transform: rotate(90deg); }
   button:active, .switch-row:active .sw, .theme-card:active { transform: scale(.95); }
@@ -112,7 +143,7 @@
     transform: translateY(105%); transition: transform .38s cubic-bezier(.2,.8,.2,1);
     box-shadow: 0 -10px 40px rgba(0,0,0,.25);
   }
-  body[data-app="glass"] .sheet { backdrop-filter: blur(28px) saturate(1.3); -webkit-backdrop-filter: blur(28px) saturate(1.3); }
+  body:is([data-app="glass"],[data-app="crimson"],[data-app="cloudy"],[data-app="aura"]) .sheet { backdrop-filter: blur(28px) saturate(1.3); -webkit-backdrop-filter: blur(28px) saturate(1.3); }
   .sheet.open { transform: none; }
   .grabber { width: 40px; height: 5px; border-radius: 99px; background: var(--track); margin: 0 auto 10px; }
   .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -138,12 +169,18 @@
   .preview i { position: absolute; left: 22%; right: 22%; bottom: 22%; height: 9px; border-radius: 4px; }
   .pv-glass { background: radial-gradient(circle at 20% 15%, #6d28d9, transparent 60%), radial-gradient(circle at 85% 85%, #1d4ed8, transparent 60%), #0b0a1f; color: #fff; }
   .pv-glass i { background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.35); }
+  .pv-crimson { background: radial-gradient(circle at 20% 15%, #be123c, transparent 60%), radial-gradient(circle at 85% 85%, #7f1d1d, transparent 60%), #1a030a; color: #fff; }
+  .pv-crimson i { background: rgba(255,255,255,.2); border: 1px solid rgba(255,190,200,.4); }
+  .pv-cloudy { background: radial-gradient(circle at 25% 20%, #c3c9d1, transparent 55%), radial-gradient(circle at 80% 75%, #8a929c, transparent 60%), #3a3f47; color: #fff; }
+  .pv-cloudy i { background: rgba(255,255,255,.25); border: 1px solid rgba(255,255,255,.4); }
+  .pv-aura { background: radial-gradient(circle at 20% 15%, #2563eb, transparent 60%), radial-gradient(circle at 80% 85%, #22d3ee, transparent 55%), #020b22; color: #fff; }
+  .pv-aura i { background: rgba(255,255,255,.2); border: 1px solid rgba(186,230,253,.45); }
   .pv-dark { background: #000; color: #f4f4f5; }
   .pv-dark i { background: #1c1c1f; }
   .pv-white { background: #f4f5f8; color: #15161a; }
   .pv-white i { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
   .check { position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: var(--bg); display: none; place-items: center; }
-  body[data-app="glass"] .check { color: #fff; }
+  body:is([data-app="glass"],[data-app="crimson"],[data-app="cloudy"],[data-app="aura"]) .check { color: #fff; }
   .check svg { width: 12px; height: 12px; }
   .theme-card[aria-pressed="true"] .check { display: grid; }
   .theme-name { font-size: 13px; }
@@ -191,6 +228,18 @@
     <button class="theme-card" data-theme-pick="glass" aria-pressed="false">
       <span class="preview pv-glass"><b>223</b><i></i><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></span>
       <span class="theme-name">Glass</span>
+    </button>
+    <button class="theme-card" data-theme-pick="crimson" aria-pressed="false">
+      <span class="preview pv-crimson"><b>223</b><i></i><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></span>
+      <span class="theme-name">Crimson</span>
+    </button>
+    <button class="theme-card" data-theme-pick="cloudy" aria-pressed="false">
+      <span class="preview pv-cloudy"><b>223</b><i></i><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></span>
+      <span class="theme-name">Grey Cloudy</span>
+    </button>
+    <button class="theme-card" data-theme-pick="aura" aria-pressed="false">
+      <span class="preview pv-aura"><b>223</b><i></i><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></span>
+      <span class="theme-name">Blue Aura</span>
     </button>
     <button class="theme-card" data-theme-pick="dark" aria-pressed="false">
       <span class="preview pv-dark"><b>223</b><i></i><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></span>
@@ -268,7 +317,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "4";
+  const APP_VERSION = "5";
   async function checkForUpdate() {
     if (location.protocol !== "https:" || location.hostname.endsWith("claude.ai")) return;
     try {
