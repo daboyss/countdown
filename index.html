@@ -251,7 +251,7 @@
   <div class="hw-head">
     <div>
       <h2>Homework</h2>
-      <p class="hw-sub" id="hwSub">From Google Classroom</p>
+      <p class="hw-sub" id="hwSub">Loading…</p>
     </div>
     <button class="pill-btn" id="hwRefresh" hidden aria-label="Refresh homework">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Refresh
@@ -383,57 +383,41 @@
   }
   const dueFmt = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
+  // Homework comes from your Apps Script robot through a private ntfy channel
+  const HW_TOPIC = "chs-hw-8f1a4a4853498b29";
+  const TODO_URL = "https://classroom.google.com/u/0/a/not-turned-in/all";
   let hwLoading = false;
+  function showTodoFallback(note) {
+    $("hwSub").textContent = note || "Your To-do list in Google Classroom";
+    $("hwBox").innerHTML = `<div class="hw-empty"><strong>No homework data yet</strong><br>Your homework robot hasn't sent anything in the last 12 hours.<br><a class="pill-btn primary" href="${TODO_URL}" target="_blank" rel="noopener">Open Classroom To-do</a></div>`;
+  }
   async function loadHomework() {
-    if (!GOOGLE_CLIENT_ID) {
-      $("hwSub").textContent = "Your To-do list in Google Classroom";
-      $("hwBox").innerHTML = '<div class="hw-empty"><strong>Check what\'s due</strong><br>Opens your Google Classroom To-do list with everything you haven\'t turned in yet.<br><a class="pill-btn primary" href="https://classroom.google.com/u/0/a/not-turned-in/all" target="_blank" rel="noopener">Open Classroom To-do</a></div>';
-      return;
-    }
-    if (classroomError) { hwMessage(`<strong>Google didn't let the app connect.</strong><br>Google said: ${esc(classroomError)}`, "Try again"); return; }
-    const token = getToken();
-    if (!token) {
-      hwMessage(wasConnected() ? "<strong>Sign-in expired.</strong><br>Google sign-ins last an hour. Tap to reconnect." : "<strong>Connect your Google Classroom</strong><br>Sign in with your school Google account to see your homework here.", wasConnected() ? "Reconnect" : "Connect Google Classroom");
-      $("hwRefresh").hidden = true;
-      return;
-    }
     if (hwLoading) return;
     hwLoading = true;
-    $("hwSub").textContent = "Loading…";
     try {
-      const courses = (await api("courses?studentId=me&courseStates=ACTIVE&pageSize=50", token)).courses || [];
-      const now = Date.now(), items = [];
-      await Promise.all(courses.map(async c => {
-        const [work, subs] = await Promise.all([
-          api(`courses/${c.id}/courseWork?pageSize=60&orderBy=updateTime%20desc`, token).catch(() => ({})),
-          api(`courses/${c.id}/courseWork/-/studentSubmissions?userId=me&pageSize=100`, token).catch(() => ({}))
-        ]);
-        const done = new Set((subs.studentSubmissions || []).filter(s => s.state === "TURNED_IN" || s.state === "RETURNED").map(s => s.courseWorkId));
-        (work.courseWork || []).forEach(w => {
-          const due = dueDateOf(w);
-          if (!due || done.has(w.id)) return;
-          const diff = due.getTime() - now;
-          if (diff < -14 * 86400000) return; // skip things over 2 weeks overdue
-          items.push({ title: w.title, course: c.name, due, diff, link: w.alternateLink });
-        });
-      }));
-      items.sort((a, b) => a.due - b.due);
-      $("hwSub").textContent = `From Google Classroom · updated ${new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" }).format(new Date())}`;
+      const res = await fetch(`https://ntfy.sh/${HW_TOPIC}/json?poll=1&since=all`, { cache: "no-store" });
+      const lines = (await res.text()).trim().split("\n").filter(Boolean);
+      let data = null;
+      for (let i = lines.length - 1; i >= 0 && !data; i--) {
+        try { const ev = JSON.parse(lines[i]); if (ev.event === "message" && ev.message) data = JSON.parse(ev.message); } catch (e) {}
+      }
+      if (!data) { showTodoFallback(); return; }
+      const now = Date.now();
+      const items = (data.h || []).map(i => ({ title: i.t, course: i.c, due: new Date(i.d), diff: i.d - now, link: "https://classroom.google.com" + (i.l || "") }));
+      const mins = Math.max(0, Math.round((now - data.u) / 60000));
+      $("hwSub").textContent = `From Google Classroom · updated ${mins < 1 ? "just now" : mins + " min ago"}`;
       $("hwRefresh").hidden = false;
-      if (!courses.length) { hwMessage("<strong>No classes found.</strong><br>Google didn't return any active classes for this account."); return; }
-      if (!items.length) { hwMessage("<strong>No homework due.</strong><br>Everything with a due date is turned in."); return; }
+      if (!items.length) { $("hwBox").innerHTML = '<div class="hw-empty"><strong>No homework due.</strong><br>Everything with a due date is turned in.</div>'; return; }
       $("hwBox").innerHTML = `<div class="hw-list">${items.map(i => {
         const cls = i.diff < 0 ? "missing" : i.diff < 86400000 ? "soon" : "";
         const chip = cls === "missing" ? '<span class="chip missing">Missing</span>' : cls === "soon" ? '<span class="chip soon">Due soon</span>' : "";
         return `<a class="hw-card ${cls}" href="${esc(i.link)}" target="_blank" rel="noopener"><span class="hw-stripe"></span><span class="hw-body"><p class="hw-title">${esc(i.title)}</p><p class="hw-course">${esc(i.course)}</p><p class="hw-due">${chip}<span>${esc(dueFmt.format(i.due))} · ${relTime(i.diff)}</span></p></span></a>`;
       }).join("")}</div>`;
     } catch (e) {
-      $("hwSub").textContent = "From Google Classroom";
-      if (e.status === 401) { try { localStorage.removeItem(TOKEN_KEY); localStorage.setItem(TOKEN_KEY, "{}"); } catch (x) {} hwMessage("<strong>Sign-in expired.</strong><br>Tap to reconnect.", "Reconnect"); }
-      else if (e.status === 403) hwMessage(`<strong>Your school blocked this.</strong><br>Google said: ${esc(e.message)}`, "Try again");
-      else hwMessage(`<strong>Couldn't load homework.</strong><br>${esc(e.message)}`, "Try again");
+      showTodoFallback("Couldn't reach your homework robot");
     } finally { hwLoading = false; }
   }
+  setInterval(loadHomework, 120000);
 
 
   function render() {
@@ -486,7 +470,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "12";
+  const APP_VERSION = "13";
   async function checkForUpdate() {
     if (!location.hostname.endsWith("github.io")) return;
     try {
