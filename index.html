@@ -10,7 +10,11 @@
 <meta name="apple-mobile-web-app-title" content="Countdown">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;500;700;800&display=swap">
 <style>
-  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); box-sizing: border-box; height: 100%; }
+  /* Fill the whole iPhone screen, including under the notch and home bar */
+  html { height: 100%; min-height: 100vh; min-height: 100lvh; background: #0b0a1f; }
+  html:has(body[data-app="glass"]) { background: linear-gradient(180deg, #2a1667 0%, #1a1450 55%, #1e2a7a 100%); }
+  html:has(body[data-app="dark"]) { background: #000000; }
+  html:has(body[data-app="white"]) { background: #f4f5f8; }
   /* Layout: one full screen, giant day count centered, gear top-right, settings sheet slides up */
   :root {
     --font: "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -36,15 +40,15 @@
     --sheet: #ffffff; --scrim: rgba(20,22,30,.28); --on: #4f46e5;
     color-scheme: light;
   }
-  html, body { height: 100%; }
   body {
+    min-height: 100vh; min-height: 100lvh; height: 100%;
     background: var(--bg); color: var(--fg); font-family: var(--font);
     margin: 0; overflow: hidden; position: relative;
     transition: background-color .4s ease, color .4s ease;
     -webkit-tap-highlight-color: transparent;
   }
   /* nebula glow (glass only) */
-  .nebula { position: fixed; inset: 0; pointer-events: none; opacity: 0; transition: opacity .5s ease; overflow: hidden; }
+  .nebula { position: fixed; top: -30vh; bottom: -30vh; left: 0; right: 0; pointer-events: none; opacity: 0; transition: opacity .5s ease; overflow: hidden; }
   body[data-app="glass"] .nebula { opacity: 1; }
   .nebula span { position: absolute; border-radius: 50%; filter: blur(70px); }
   .nebula .b1 { width: 70vmax; height: 70vmax; left: -25vmax; top: -20vmax; background: #6d28d9; opacity: .55; }
@@ -52,11 +56,13 @@
   .nebula .b3 { width: 35vmax; height: 35vmax; left: 40%; top: 45%; background: #db2777; opacity: .28; }
 
   .app {
-    position: relative; height: 100%; box-sizing: border-box;
+    position: fixed; inset: 0; box-sizing: border-box;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
-    padding-block: 72px 32px; text-align: center;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
+    text-align: center;
     animation: fadeIn .7s ease both;
   }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -262,7 +268,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "3";
+  const APP_VERSION = "4";
   async function checkForUpdate() {
     if (location.protocol !== "https:" || location.hostname.endsWith("claude.ai")) return;
     try {
