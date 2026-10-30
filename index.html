@@ -250,7 +250,7 @@
       <span class="theme-name">White</span>
     </button>
   </div>
-  <p class="note">Counts down to the end of the last day of school, June 10, 2027, California time.</p>
+  <p class="note">Counts down to the end of the last day of school, June 10, 2027, California time.<br>App version <span id="ver"></span></p>
 </section>
 
 <script>
@@ -317,7 +317,7 @@
   $("scrim").addEventListener("click", () => openSheet(false));
 
   // Self-update: check the site for a newer version and reload when one is found
-  const APP_VERSION = "5";
+  const APP_VERSION = "6";
   async function checkForUpdate() {
     if (location.protocol !== "https:" || location.hostname.endsWith("claude.ai")) return;
     try {
@@ -327,6 +327,7 @@
       if (m && m[1] !== APP_VERSION) location.reload();
     } catch (e) {}
   }
+  $("ver").textContent = APP_VERSION;
   setInterval(checkForUpdate, 60000);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) checkForUpdate(); });
 
